@@ -2,29 +2,34 @@ from moviepy.editor import *
 from tkinter import filedialog
 from tkinter import *
 from tkinter.ttk import *
+from mutagen.mp3 import MP3
 import os
 import random
 
 #Global Variables
-#audio = AudioFileClip("../resources/Audio/In the End.mp3")
+#audio = AudioFileClip("In the End.mp3")
 
 OFFSET = 10
 MIN_SECONDS = 100
 MAX_SECONDS = 1280 - OFFSET
-directory = ''
 
 
 
-def edit(files):
+
+
+def edit(videos, audio):
     clipList = []
-    
-    for i in range(0, 10):
+    runtime = 0
+    maxtime = MP3(audio).info.length
+    while(runtime < maxtime):
         start = random.randint(MIN_SECONDS, MAX_SECONDS)
         end = start + random.randint(2, 6)
-        clip = VideoFileClip(files[random.randint(0, len(files)-1)]).subclip(start, end)
+        clip = VideoFileClip(videos[random.randint(0, len(videos)-1)]).subclip(start, end)
         clip = clip.volumex(0.0)
         clipList.append(clip)
-        print("Clips appended: " + str(i + 1))
+        runtime += end - start
+        currtime = str(runtime//60) + ":" + str(runtime % 60)
+        app.updateOutput("Editing..." + currtime)
 
     
     finalClip = concatenate_videoclips(clipList)
@@ -41,38 +46,59 @@ class MainApp:
         #Variables
         self.fileList = []
         self.selectedFiles = []
+        self.audioDirectory = ''
+        self.fileDirectory = ''
 
-        # Create UI Window
+    def createMenu(self):
         self.window = Tk()
-        self.window.title("AMV Editor Wizard")
-        self.window.geometry('800x500')
-        self.dirButton = Button(self.window, text='Select directory', command=self.getDir)
-        self.dirButton.grid(column=0, row=0)
-        self.dirLabel = Label(self.window, text=directory, font=("Arial", 10))
-        self.dirLabel.grid(column=1, row=0)
-        self.fileSelect =  Listbox(self.window, selectmode='extended', width=50)
-        self.fileSelect.grid(column=0, row=1)
+        self.window.title("Auto-Editor Wizard")
+        self.window.geometry('800x600')
+        self.audioButton = Button(self.window, text='Select music', command=self.getAudioDir)
+        self.audioButton.pack(pady=5)
+        self.audioLabel = Label(self.window, text=self.audioDirectory, font=("Arial", 10))
+        self.audioLabel.pack(padx=3)
+        self.dirButton = Button(self.window, text='Select video folder', command=self.getFileDir)
+        self.dirButton.pack(pady=5)
+        self.dirLabel = Label(self.window, text=self.fileDirectory, font=("Arial", 10))
+        self.dirLabel.pack(padx=3)
         self.selectAllButton = Button(self.window, text='Select all', command=self.selectAllFiles)
-        self.selectAllButton.grid(column=1, row=1)
+        self.selectAllButton.pack(pady=5)
+        self.fileSelect =  Listbox(self.window, selectmode='extended', height=15)
+        self.fileSelect.pack(fill=X, padx=20)
+        
         self.editButton = Button(self.window, text='Edit', command=self.editClicked)
-        self.editButton.grid(column = 0, row = 8)
+        self.editButton.pack(fill=X, pady=10, padx=50, ipady=12)
+
+        self.outputLabel = Label(self.window, text='')
+        self.outputLabel.pack(pady=15)
     
         self.window.mainloop()
 
     def editClicked(self):
+        if(not self.audioDirectory):
+            self.popupmsg('No audio was selected! Please select a file to continue.')
+        elif(not self.fileDirectory):
+            self.popupmsg('No video folder was selected! Please select a folder to continue.')
+        elif(not self.fileSelect.curselection()):
+            self.popupmsg('No files were selected! Please select at least one file to continue.')
         for index in (self.fileSelect.curselection()):
             self.selectedFiles.append(self.fileSelect.get(index))
-        edit(self.selectedFiles)
+        edit(self.selectedFiles, self.audioDirectory)
 
-    def getDir(self):
-        global directory
-        directory = filedialog.askdirectory()
-        self.updateLabel(self.dirLabel, directory) 
-        self.updateFileList(directory)
+    def getFileDir(self):
+        self.fileDirectory = filedialog.askdirectory()
+        self.updateLabel(self.dirLabel, self.fileDirectory) 
+        self.updateFileList(self.fileDirectory)
     
+    def getAudioDir(self):
+        self.audioDirectory = filedialog.askopenfilename()
+        self.updateLabel(self.audioLabel, self.audioDirectory)
 
     def updateLabel(self, label, content):
         label.configure(text=content)
+    
+    def updateOutput(self, content):
+        self.outputLabel.configure(text=content)
 
     def updateFileList(self, fileDir):
         self.fileSelect.delete(0, END)
@@ -88,6 +114,18 @@ class MainApp:
 
     def selectAllFiles(self):
         self.fileSelect.selection_set(0, END)
+
+    def popupmsg(self, msg):
+        popup = Tk()
+        popup.title("!")
+        label = Label(popup, text=msg)
+        label.pack(side="top", fill="x", pady=10)
+        B1 = Button(popup, text="Okay", command = popup.destroy)
+        B1.pack()
+        popup.mainloop()
+
+    def write(self, string):
+        self.updateOutput(string)
     
 
 
@@ -100,10 +138,12 @@ class MainApp:
     
     
 
-
+#global app
+app = MainApp()
+#sys.stdout=app.write()
 
 if __name__ == "__main__":
-    app = MainApp()
+    app.createMenu()
 
     #edit()
 
