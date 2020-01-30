@@ -2,11 +2,12 @@ from moviepy.editor import *
 from tkinter import filedialog
 from tkinter import *
 from tkinter.ttk import *
+from mutagen.mp3 import MP3
 import os
 import random
 
 #Global Variables
-#audio = AudioFileClip("../resources/Audio/In the End.mp3")
+#audio = AudioFileClip("In the End.mp3")
 
 OFFSET = 10
 MIN_SECONDS = 100
@@ -18,13 +19,17 @@ directory = ''
 def edit(files):
     clipList = []
     
-    for i in range(0, 10):
+    runtime = 0
+    maxtime = MP3("In the End.mp3").info.length
+    while(runtime < maxtime):
         start = random.randint(MIN_SECONDS, MAX_SECONDS)
         end = start + random.randint(2, 6)
         clip = VideoFileClip(files[random.randint(0, len(files)-1)]).subclip(start, end)
         clip = clip.volumex(0.0)
         clipList.append(clip)
-        print("Clips appended: " + str(i + 1))
+        runtime += end - start
+        currtime = str(runtime/60) + ":" + str(runtime % 60)
+        print("Clips appended: " + str(i + 1) + ", " + currtime)
 
     
     finalClip = concatenate_videoclips(clipList)
