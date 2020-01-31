@@ -7,8 +7,6 @@ import os
 import random
 
 #Global Variables
-#audio = AudioFileClip("In the End.mp3")
-
 OFFSET = 10
 MIN_SECONDS = 100
 MAX_SECONDS = 1280 - OFFSET
@@ -18,6 +16,7 @@ MAX_SECONDS = 1280 - OFFSET
 
 
 def edit(videos, audio):
+
     clipList = []
     runtime = 0
     maxtime = MP3(audio).info.length
@@ -25,18 +24,17 @@ def edit(videos, audio):
         start = random.randint(MIN_SECONDS, MAX_SECONDS)
         end = start + random.randint(2, 6)
         clip = VideoFileClip(videos[random.randint(0, len(videos)-1)]).subclip(start, end)
-        clip = clip.volumex(0.0)
         clipList.append(clip)
         runtime += end - start
         currtime = str(runtime//60) + ":" + str(runtime % 60)
         app.updateOutput("Editing..." + currtime)
+        print("Editing..." + currtime)
 
     
     finalClip = concatenate_videoclips(clipList)
     #finalClip.set_audio(audio)
-    finalClip = finalClip.volumex(1.0)
-
-    finalClip.write_videofile("AMV.mp4")
+    
+    finalClip.write_videofile("AMV.mp4", codec='mpeg4', audio=AudioFileClip(audio))
 
 
 class MainApp:
@@ -135,6 +133,7 @@ class MainApp:
     
 
 
+
     
     
 
@@ -144,8 +143,6 @@ app = MainApp()
 
 if __name__ == "__main__":
     app.createMenu()
-
-    #edit()
 
 
 
