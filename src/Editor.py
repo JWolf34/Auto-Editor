@@ -33,8 +33,8 @@ def edit(videos, audio):
     
     finalClip = concatenate_videoclips(clipList)
     #finalClip.set_audio(audio)
-
-    finalClip.write_videofile("AMV.mp4")
+    
+    finalClip.write_videofile("AMV.mp4", codec='mpeg4', audio=AudioFileClip(audio))
 
 
 class MainApp:
@@ -133,6 +133,7 @@ class MainApp:
     
 
 
+
     
     
 
@@ -142,8 +143,6 @@ app = MainApp()
 
 if __name__ == "__main__":
     app.createMenu()
-
-    #edit()
 
 
 
