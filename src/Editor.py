@@ -34,7 +34,7 @@ def edit(videos, audio):
     finalClip = concatenate_videoclips(clipList)
     #finalClip.set_audio(audio)
     
-    finalClip.write_videofile("AMV.mp4", codec='mpeg4', audio=AudioFileClip(audio))
+    finalClip.write_videofile("AMV.mp4", audio=AudioFileClip(audio))
 
 
 class MainApp:
